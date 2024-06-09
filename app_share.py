@@ -15,8 +15,8 @@ def download_file_openxlab(url, destination):
         try:
             response = requests.get(url)
             if response.status_code == 200:
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
                 with open(destination, 'wb') as f:
                     f.write(response.content)
                 print("File downloaded successfully!")
