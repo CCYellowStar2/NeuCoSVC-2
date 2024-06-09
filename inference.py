@@ -10,6 +10,10 @@ from SVCNN import SVCNN
 from utils.tools import extract_voiced_area
 from utils.extract_pitch import extract_pitch_ref as extract_pitch, coarse_f0
 
+from Phoneme_Hallucinator_v2.utils.hparams import HParams
+from Phoneme_Hallucinator_v2.models import get_model as get_hallucinator
+from Phoneme_Hallucinator_v2.scripts.speech_expansion_ins import single_expand
+
 SPEAKER_INFORMATION_WEIGHTS = [
     0, 0, 0, 0, 0, 0,  # layer 0-5
     1.0, 0, 0, 0,
@@ -31,7 +35,7 @@ APPLIED_INFORMATION_WEIGHTS = [
 ]
 
 
-def svc(model, src_wav_path, ref_wav_path, synth_set_path=None, f0_factor=0., speech_enroll=False, out_dir="output", hallucinated_set_path=None, device='cpu'):
+def svc(model, src_wav_path, ref_wav_path, synth_set_path=None, f0_factor=0, speech_enroll=False, out_dir="output", hallucinated_set_path=None, device='cpu'):
     
     wav_name = os.path.basename(src_wav_path).split('.')[0]
     ref_name = os.path.basename(ref_wav_path).split('.')[0]
@@ -51,12 +55,21 @@ def svc(model, src_wav_path, ref_wav_path, synth_set_path=None, f0_factor=0., sp
     if synth_set_path:
         synth_set = torch.load(synth_set_path).to(device)
     else:
-        synth_set = model.get_matching_set(ref_wav_path).to(device)
+        synth_set_path = f"matching_set/{ref_name}.pt"
+        synth_set = model.get_matching_set(ref_wav_path, out_path=synth_set_path).to(device)
 
-    if hallucinated_set_path:
-        hallucinated_set = torch.from_numpy(np.load(hallucinated_set_path)).to(device)
-        synth_set = torch.cat([synth_set, hallucinated_set], dim=0)
+    if hallucinated_set_path is None:
+        params = HParams('Phoneme_Hallucinator_v2/exp/speech_XXL_cond/params.json')
+        Hallucinator = get_hallucinator(params)
+        Hallucinator.load()
+        hallucinated_set = single_expand(synth_set_path, Hallucinator, 15000)
+    else:
+        hallucinated_set = np.load(hallucinated_set_path)
     
+    hallucinated_set = torch.from_numpy(hallucinated_set).to(device)
+
+    synth_set = torch.cat([synth_set, hallucinated_set], dim=0)
+
     query_len = query_seq.shape[0]
     if len(query_mask) > query_len:
         query_mask = query_mask[:query_len]
@@ -93,7 +106,9 @@ def main(a):
     # device = 'cpu'
     print(f'using {device} for inference')
 
-    f0factor = pow(2, a.key_shift / 12) if a.key_shift else 0.
+    f0factor = pow(2, a.key_shift / 12) if a.key_shift else 0
+    if a.key_shift==100:
+        f0factor=100
 
     speech_enroll = a.speech_enroll
     model = SVCNN(model_ckpt_path, device=device)
