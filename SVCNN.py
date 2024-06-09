@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from typing import Union, Any, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -73,7 +73,7 @@ class SVCNN(nn.Module):
         self.sr = 16000
         self.hop_length = 320
 
-    def get_matching_set(self, p: Path|str, weights=None, vad_trigger_level=0, out_path=None) -> Tensor:
+    def get_matching_set(self, p: Union[Path, str], weights=None, vad_trigger_level=0, out_path=None) -> Tensor:
         """ Get concatenated wavlm features for the matching set using all waveforms in `wavs`, 
         specified as either a list of paths or list of loaded waveform tensors of 
         shape (channels, T), assumed to be of 16kHz sample rate.
@@ -158,9 +158,10 @@ class SVCNN(nn.Module):
 
 
     @torch.inference_mode()
-    def match(self, query_seq: Tensor, pitch:Tensor, pitch_bins:Tensor, synth_set: Tensor,
-              topk: int = 4, query_mask: Tensor = None, alpha = 0, tgt_loudness_db: float | None = -16,
-              target_duration: float | None = None, device: str | None = None) -> Tensor:
+    def match(self, query_seq: Tensor, pitch: Tensor, pitch_bins: Tensor, synth_set: Tensor,
+          topk: int = 4, query_mask: Optional[Tensor] = None, alpha=0, 
+          tgt_loudness_db: Optional[float] = -16,
+          target_duration: Optional[float] = None, device: Optional[str] = None) -> Tensor:
         """ Given `query_seq`, `matching_set`, and `synth_set` tensors of shape (N, dim), perform kNN regression matching
         with k=`topk`. Inputs:
             - `query_seq`: Tensor (N1, dim) of the input/source query features.
