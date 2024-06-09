@@ -31,7 +31,7 @@ class AudioPre:
         cpk = torch.load(model_path, map_location="cpu")
         model.load_state_dict(cpk)
         model.eval()
-        if is_half:
+        if is_half and device == 'cuda':
             model = model.half().to(device)
         else:
             model = model.to(device)
