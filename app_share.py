@@ -11,12 +11,16 @@ import urllib.request
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/models/Kevin676/rvc-models/weight/UVR-HP5.pth", "uvr5/uvr_model/UVR-HP5.pth")
 
 def download_file_openxlab(url, destination):
+    # 获取目标文件的目录部分
+    directory = os.path.dirname(destination)
+    
+    # 确保目标文件夹存在
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory)
     while True:
         try:
             response = requests.get(url)
             if response.status_code == 200:
-                if not os.path.exists(destination):
-                    os.makedirs(destination)
                 with open(destination, 'wb') as f:
                     f.write(response.content)
                 print("File downloaded successfully!")
