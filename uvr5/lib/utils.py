@@ -43,8 +43,10 @@ def inference(X_spec, device, model, aggressiveness, data):
                     None, :, :, start : start + data["window_size"]
                 ]
                 X_mag_window = torch.from_numpy(X_mag_window)
-                if is_half:
+                if is_half and device == 'cuda':
                     X_mag_window = X_mag_window.half()
+                else:
+                    X_mag_window = X_mag_window.float()
                 X_mag_window = X_mag_window.to(device)
 
                 pred = model.predict(X_mag_window, aggressiveness)
