@@ -30,7 +30,7 @@ def download_file_openxlab(url, destination):
 url_wavlm = "https://modelscope.cn/api/v1/models/Kevin676/neuco2/repo?Revision=master&FilePath=WavLM-Large.pt"
 destination_wavlm = "ckpt/WavLM-Large.pt"
 
-url_uvr = "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/5_HP-Karaoke-UVR.pth"
+url_uvr = "https://modelscope.cn/api/v1/models/CCYellowStar/5_HP-Karaoke-UVR/repo?Revision=master&FilePath=5_HP-Karaoke-UVR.pth"
 destination_uvr = "uvr5/uvr_model/5_HP-Karaoke-UVR.pth"
 
 url_G_150k = "https://modelscope.cn/api/v1/models/Kevin676/neuco2/repo?Revision=master&FilePath=G_150k.pt"
