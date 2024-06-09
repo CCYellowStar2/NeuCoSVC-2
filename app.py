@@ -15,6 +15,8 @@ def download_file_openxlab(url, destination):
     if os.path.exists(destination):
         print("File already exists, skipping download.")
         return
+    else:
+        print(" start download... "+destination)     
         
     # 获取目标文件的目录部分
     directory = os.path.dirname(destination)
