@@ -175,10 +175,10 @@ def extract_pitch_ref(wav_path: str, ref_path: str, predefined_factor=0, speech_
     nonzero_indices = np.nonzero(source_f0)
     source_mean = np.mean(source_f0[nonzero_indices], axis=0)
 
-    if predefined_factor != 0.:
+    if predefined_factor != 0. and predefined_factor < 100:
         print(f'Using predefined factor {predefined_factor}.')
         factor = predefined_factor
-    else:
+    elif predefined_factor == 100:
         # Compute mean and std for pitch with the reference audio
         ref_wav, fs = load_wav(ref_path)
         ref_f0 = ParselMouth_F0(ref_wav, fs)
@@ -188,7 +188,9 @@ def extract_pitch_ref(wav_path: str, ref_path: str, predefined_factor=0, speech_
         if speech_enroll:
             factor = factor * 1.2
         print(f'pitch shift factor: {factor:.2f}')
-
+    elif predefined_factor == 0:
+        print(f'Using predefined factor 1.')
+        factor = 1
     # Modify f0 to fit with different persons
     source_f0 = source_f0 * factor
 
