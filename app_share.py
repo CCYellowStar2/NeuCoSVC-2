@@ -7,7 +7,7 @@ import urllib.request
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/repos/file/Kevin676/NeuCoSVC-2/main?filepath=WavLM-Large.pt&sign=971a42d686a15fcd3aafae29c1c97220&nonce=1715413418821", "ckpt/WavLM-Large.pt")
 #urllib.request.urlretrieve("https://cdn-lfs-us-1.huggingface.co/repos/39/6c/396c5940f123f7b55c7446e10b2e81545db6b5ac9e2e9c70818210002923f9f7/e7b1a67aef7d681ba7a85f60e5760e006f1fc4fd834e001f16aad5f3188f98b1?response-content-disposition=attachment%3B+filename*%3DUTF-8%27%27G_150k.pt%3B+filename%3D%22G_150k.pt%22%3B&Expires=1718168200&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTcxODE2ODIwMH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy11cy0xLmh1Z2dpbmdmYWNlLmNvL3JlcG9zLzM5LzZjLzM5NmM1OTQwZjEyM2Y3YjU1Yzc0NDZlMTBiMmU4MTU0NWRiNmI1YWM5ZTJlOWM3MDgxODIxMDAwMjkyM2Y5ZjcvZTdiMWE2N2FlZjdkNjgxYmE3YTg1ZjYwZTU3NjBlMDA2ZjFmYzRmZDgzNGUwMDFmMTZhYWQ1ZjMxODhmOThiMT9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPSoifV19&Signature=lGtg0oQ4JcwuSQOy8T65PJTLHDgo4EYKc-Rnyx7-nIMUtxLxQFDw3gxivKpHEdZRGV3AHk8kWYRlWABRKvNi-lii%7Ee39UWuwXQLwfn0jhVidkQzzT8FZyj10BWU2bGDCvHFBixp81iyPUEhlSpK6CMRg4r1oC14QO859pJd5BYUHFsmODMxaLxrls0fhjMy%7ErOrJuBhMPZEML%7EU8M8RooVNd0z0Aw379uuhTH0mArkw7MOGlOGQaAjh2lh2lKVsYhS-jSbDpVJ9UHMAaYt1fIoeQGOjiwc4JotSFP8MAXgTFLbjNlqb8vmdjJJnTaUKBGpr-6JTAD15kv3eUtFDZwQ__&Key-Pair-Id=KCD77M1F0VK2B", "ckpt/G_150k.pt")
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/repos/file/Kevin676/NeuCoSVC-v2/main?filepath=speech_XXL_cond.zip&sign=0520b3273355818d1ebee030bce88ee4&nonce=1715413443250", "speech_XXL_cond.zip")
-urllib.request.urlretrieve("https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/5_HP-Karaoke-UVR.pth", "uvr5/uvr_model/5_HP-Karaoke-UVR.pth")
+#urllib.request.urlretrieve("https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/5_HP-Karaoke-UVR.pth", "uvr5/uvr_model/5_HP-Karaoke-UVR.pth")
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/models/Kevin676/rvc-models/weight/UVR-HP5.pth", "uvr5/uvr_model/UVR-HP5.pth")
 
 def download_file_openxlab(url, destination):
@@ -30,6 +30,9 @@ def download_file_openxlab(url, destination):
 url_wavlm = "https://modelscope.cn/api/v1/models/Kevin676/neuco2/repo?Revision=master&FilePath=WavLM-Large.pt"
 destination_wavlm = "ckpt/WavLM-Large.pt"
 
+url_uvr = "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/5_HP-Karaoke-UVR.pth"
+destination_uvr = "uvr5/uvr_model/5_HP-Karaoke-UVR.pth"
+
 url_G_150k = "https://modelscope.cn/api/v1/models/Kevin676/neuco2/repo?Revision=master&FilePath=G_150k.pt"
 destination_G_150k = "ckpt/G_150k.pt"
 
@@ -37,6 +40,7 @@ url_speech = "https://modelscope.cn/api/v1/models/Kevin676/neuco2/repo?Revision=
 destination_speech = "speech_XXL_cond.zip"
 
 download_file_openxlab(url_wavlm, destination_wavlm)
+download_file_openxlab(url_uvr, destination_uvr)
 download_file_openxlab(url_G_150k, destination_G_150k)
 download_file_openxlab(url_speech, destination_speech)
 
