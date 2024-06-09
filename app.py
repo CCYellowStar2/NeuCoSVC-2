@@ -73,7 +73,7 @@ def search_bilibili(keyword):
       req = requests.get("https://search.bilibili.com/all?keyword={}&duration=1".format(keyword), headers=headers).text
     else:
       req = requests.get("https://search.bilibili.com/all?keyword={}&duration=1&tids=3&page=1".format(keyword), headers=headers).text
-
+    print(keyword)
     video_link = "https:" + find_first_appearance_with_neighborhood(req, pattern)
 
     return video_link
@@ -121,14 +121,14 @@ for name in os.listdir(weight_uvr5_root):
 func = AudioPre
 pre_fun_hp2 = func(
   agg=int(10),
-  model_path=os.path.join(weight_uvr5_root, "UVR-HP2.pth"),
+  model_path=os.path.join(weight_uvr5_root, "5_HP-Karaoke-UVR.pth"),
   device=device,
   is_half=True,
 )
 
 pre_fun_hp5 = func(
   agg=int(10),
-  model_path=os.path.join(weight_uvr5_root, "UVR-HP5.pth"),
+  model_path=os.path.join(weight_uvr5_root, "5_HP-Karaoke-UVR.pth"),
   device=device,
   is_half=True,
 )
@@ -191,7 +191,7 @@ def youtube_downloader(
         f.write(audio_content)
     audio_path = filename.strip() + ".wav"
     start_ms = start_time * 1000
-    end_ms = start_ms + 45000
+    end_ms = start_ms + 60000
       # make dir output
     os.makedirs("output", exist_ok=True)
 
@@ -201,15 +201,20 @@ def youtube_downloader(
         pre_fun = pre_fun_hp5
 
     audio_orig = AudioSegment.from_file(audio_path)
-    if len(audio_orig) > end_ms:
+    if len(audio_orig) >= end_ms:
 
       # Extract the segment
       segment = audio_orig[start_ms:end_ms]
       segment.export(filename.strip() + ".wav", format="wav")
       pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
-    else:
-      segment = audio_orig[start_ms:len(audio_orig)]
+    elif len(audio_orig) >= 60000:
+      segment = audio_orig[len(audio_orig)-60000:len(audio_orig)]
+      segment.export(filename.strip() + ".wav", format="wav")
+      pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+      os.remove(filename.strip()+".wav")
+    elif len(audio_orig) < 60000:
+      segment = audio_orig[0:len(audio_orig)]
       segment.export(filename.strip() + ".wav", format="wav")
       pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
@@ -247,11 +252,21 @@ def youtube_downloader_100s(
       segment = audio_orig[start_ms:end_ms]
 
       segment.export(filename.strip() + ".wav", format="wav")
-
-      pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+      if os.path.exists(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav"):
+        audio_orig1 = AudioSegment.from_file(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav")
+        audio_orig = AudioSegment.from_file(audio_path)
+        if len(audio_orig1)+1000 < len(audio_orig):
+          pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+      else:
+        pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
     else:
-      pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+      if os.path.exists(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav"):
+        audio_orig1 = AudioSegment.from_file(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav")
+        if len(audio_orig1)+1000 < len(audio_orig):
+          pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+      else:
+        pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
 
     return f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav", f"./output/{split_model}/{filename}/instrument_{filename}.wav_10.wav"
@@ -285,13 +300,17 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
       song_name_ref = song_name_ref.strip().replace(" ", "")
       video_identifier = search_bilibili(song_name_ref)
       song_id = get_bilibili_video_id(video_identifier)
-
       if os.path.isdir(f"./output/{split_model}/{song_id}")==False:
         audio, sr = librosa.load(youtube_downloader_100s(video_identifier, song_id, split_model)[0], sr=24000, mono=True)
         soundfile.write("audio_ref.wav", audio, sr)
       else:
-        audio, sr = librosa.load(f"./output/{split_model}/{song_id}/vocal_{song_id}.wav_10.wav", sr=24000, mono=True)
-        soundfile.write("audio_ref.wav", audio, sr)
+        audio_orig = AudioSegment.from_file(f"./output/{split_model}/{song_id}/vocal_{song_id}.wav_10.wav")
+        if len(audio_orig) > 60000:
+          audio, sr = librosa.load(f"./output/{split_model}/{song_id}/vocal_{song_id}.wav_10.wav", sr=24000, mono=True)
+          soundfile.write("audio_ref.wav", audio, sr)
+        else:
+          audio, sr = librosa.load(youtube_downloader_100s(video_identifier, song_id, split_model)[0], sr=24000, mono=True)
+          soundfile.write("audio_ref.wav", audio, sr)
     
       vad("audio_ref.wav")
   else:   
@@ -310,13 +329,13 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
 
   if check_song == True:
       if auto_key == True:
-          os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav")
+          os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --key_shift 100")
       else:
           os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --key_shift {key_shift}")
  
   else:
       if auto_key == True:
-          os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --speech_enroll")
+          os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --speech_enroll --key_shift 100")
       else:
           os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --key_shift {key_shift} --speech_enroll")
 
@@ -333,11 +352,12 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
       combined_audio = audio_vocal.overlay(audio_inst)
     
       # Export the concatenated audio to a new file
-      combined_audio.export(f"{song_name_src}-AI翻唱.wav", format="wav")
+      combined_audio.export(f"{song_name_src}-AI翻唱.mp3", format="MP3")
     
-      return f"{song_name_src}-AI翻唱.wav"
+      return f"{song_name_src}-AI翻唱.mp3"
   else:
       return "output_svc/NeuCoSVCv2.wav"
+
 
 
 app = gr.Blocks()
