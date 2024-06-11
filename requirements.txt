@@ -12,3 +12,4 @@ torchaudio==2.0.2
 pydub
 gradio==4.29.0
 webrtcvad
+pedalboard
