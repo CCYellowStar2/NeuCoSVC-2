@@ -4,6 +4,7 @@ import json
 import torch
 import time
 import urllib.request
+import shutil
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/repos/file/Kevin676/NeuCoSVC-2/main?filepath=WavLM-Large.pt&sign=971a42d686a15fcd3aafae29c1c97220&nonce=1715413418821", "ckpt/WavLM-Large.pt")
 #urllib.request.urlretrieve("https://cdn-lfs-us-1.huggingface.co/repos/39/6c/396c5940f123f7b55c7446e10b2e81545db6b5ac9e2e9c70818210002923f9f7/e7b1a67aef7d681ba7a85f60e5760e006f1fc4fd834e001f16aad5f3188f98b1?response-content-disposition=attachment%3B+filename*%3DUTF-8%27%27G_150k.pt%3B+filename%3D%22G_150k.pt%22%3B&Expires=1718168200&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTcxODE2ODIwMH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy11cy0xLmh1Z2dpbmdmYWNlLmNvL3JlcG9zLzM5LzZjLzM5NmM1OTQwZjEyM2Y3YjU1Yzc0NDZlMTBiMmU4MTU0NWRiNmI1YWM5ZTJlOWM3MDgxODIxMDAwMjkyM2Y5ZjcvZTdiMWE2N2FlZjdkNjgxYmE3YTg1ZjYwZTU3NjBlMDA2ZjFmYzRmZDgzNGUwMDFmMTZhYWQ1ZjMxODhmOThiMT9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPSoifV19&Signature=lGtg0oQ4JcwuSQOy8T65PJTLHDgo4EYKc-Rnyx7-nIMUtxLxQFDw3gxivKpHEdZRGV3AHk8kWYRlWABRKvNi-lii%7Ee39UWuwXQLwfn0jhVidkQzzT8FZyj10BWU2bGDCvHFBixp81iyPUEhlSpK6CMRg4r1oC14QO859pJd5BYUHFsmODMxaLxrls0fhjMy%7ErOrJuBhMPZEML%7EU8M8RooVNd0z0Aw379uuhTH0mArkw7MOGlOGQaAjh2lh2lKVsYhS-jSbDpVJ9UHMAaYt1fIoeQGOjiwc4JotSFP8MAXgTFLbjNlqb8vmdjJJnTaUKBGpr-6JTAD15kv3eUtFDZwQ__&Key-Pair-Id=KCD77M1F0VK2B", "ckpt/G_150k.pt")
 #urllib.request.urlretrieve("https://download.openxlab.org.cn/repos/file/Kevin676/NeuCoSVC-v2/main?filepath=speech_XXL_cond.zip&sign=0520b3273355818d1ebee030bce88ee4&nonce=1715413443250", "speech_XXL_cond.zip")
@@ -150,13 +151,17 @@ pre_fun_hp5 = func(
 import webrtcvad
 from pydub import AudioSegment
 from pydub.utils import make_chunks
-
+from pydub.effects import compress_dynamic_range
+from pydub.effects import normalize
+from pedalboard import Pedalboard, Reverb
+from scipy.signal import firwin, lfilter, iirfilter
 import os
+import numpy as np
 import librosa
 import soundfile
 import gradio as gr
 
-
+split_model = "UVR-HP5"
 def vad(audio_name):
   audio = AudioSegment.from_file(audio_name, format="wav")
   # Set the desired sample rate (WebRTC VAD supports only 8000, 16000, 32000, or 48000 Hz)
@@ -187,9 +192,7 @@ def vad(audio_name):
   voiced_audio = sum(voiced_frames, AudioSegment.silent(duration=0))
 
   voiced_audio.export("voiced_audio.wav", format="wav")
-
-
-
+  
 
 def youtube_downloader(
     video_identifier,
@@ -270,17 +273,17 @@ def youtube_downloader_100s(
         audio_orig1 = AudioSegment.from_file(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav")
         audio_orig = AudioSegment.from_file(audio_path)
         if len(audio_orig1)+1000 < len(audio_orig):
-          pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+           pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       else:
-        pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+         pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
     else:
       if os.path.exists(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav"):
         audio_orig1 = AudioSegment.from_file(f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav")
         if len(audio_orig1)+1000 < len(audio_orig):
-          pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+           pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       else:
-        pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
+         pre_fun._path_audio_(filename.strip() + ".wav", f"./output/{split_model}/{filename}/", f"./output/{split_model}/{filename}/", "wav")
       os.remove(filename.strip()+".wav")
 
     return f"./output/{split_model}/{filename}/vocal_{filename}.wav_10.wav", f"./output/{split_model}/{filename}/instrument_{filename}.wav_10.wav"
@@ -355,15 +358,66 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
 
   if src_audio is None:
       audio_vocal = AudioSegment.from_file("output_svc/NeuCoSVCv2.wav", format="wav")
-    
+
+    # 进行动态范围的压缩
+      audio_vocal_compressed = compress_dynamic_range(audio_vocal, threshold=-12.5, ratio=3.0, attack=1.5, release=100.0)
+
+
+    # 定义均衡器参数
+      sampling_rate = audio_vocal_compressed.frame_rate
+      numtaps = 101  # 滤波器长度
+      cutoff_freq = 140  # 截止频率（Hz）
+
+    # 设计低通滤波器
+      coeffs = firwin(numtaps, cutoff=cutoff_freq, fs=sampling_rate, pass_zero='highpass', window='hamming')
+
+    # 将均衡器应用于音频数据的每个通道
+      filtered_audio = []
+      for channel in audio_vocal_compressed.split_to_mono():
+          filtered_channel = lfilter(coeffs, 1.0, np.array(channel.get_array_of_samples()))
+          filtered_audio.append(filtered_channel.astype(np.int16))
+
+    # 合并通道并创建新的 AudioSegment
+      filtered_audio_combined = np.array(filtered_audio).T
+      filtered_audio_segment = AudioSegment(filtered_audio_combined.tobytes(), frame_rate=sampling_rate, sample_width=audio_vocal_compressed.sample_width, channels=len(filtered_audio))
+      
+    # 将音频数据转换为 numpy 数组
+      samples = np.array(filtered_audio_segment.get_array_of_samples())
+      samples = samples.astype(np.float32) / 32768.0  # 转换为浮点数
+
+    # 创建 Pedalboard 对象并添加 Reverb 效果
+      board = Pedalboard([
+        Reverb(room_size=0.50, damping=0.4, wet_level=0.3, dry_level=0.7, width=0.5)
+      ])
+
+    # 获取音频采样率
+      sample_rate = filtered_audio_segment.frame_rate
+
+    # 应用混响效果
+      processed_samples = board(samples, sample_rate)
+
+    # 转换回 16 位整数
+      processed_samples = (processed_samples * 32768).astype(np.int16)
+
+    # 将处理后的音频数据转换回 AudioSegment
+      processed_audio = AudioSegment(
+        processed_samples.tobytes(),
+        frame_rate=sample_rate,
+        sample_width=2,  # 2 bytes for 16-bit audio
+        channels=filtered_audio_segment.channels
+      )
+
+    # 增加音量
+      audio_vocal_adjusted = processed_audio + vocal_vol  # 将音量增加 5 dB
+    # 归一化音频，将峰值调整到 -1 dBFS
+      normalized_audio = normalize(audio_vocal_adjusted, headroom=-1.0)
       # Load the second audio file
       audio_inst = AudioSegment.from_file(f"output/{split_model}/{song_id_src}/instrument_{song_id_src}.wav_10.wav", format="wav")
     
-      audio_vocal = audio_vocal + vocal_vol  # Increase volume of the first audio by 5 dB
       audio_inst = audio_inst + inst_vol  # Decrease volume of the second audio by 5 dB
     
       # Concatenate audio files
-      combined_audio = audio_vocal.overlay(audio_inst)
+      combined_audio = normalized_audio.overlay(audio_inst)
     
       # Export the concatenated audio to a new file
       combined_audio.export(f"{song_name_src}-AI翻唱.mp3", format="MP3")
@@ -410,6 +464,5 @@ with app:
                   </p>
       </div>
   ''')
-
 app.queue(max_size=40, api_open=False)
 app.launch(max_threads=400, show_error=True)
