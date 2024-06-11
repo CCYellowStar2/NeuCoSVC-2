@@ -10,5 +10,6 @@ tf-keras==2.15.0
 #torch==2.0.1
 #torchaudio==2.0.2
 pydub
-gradio==3.36.1
+gradio==4.29.0
 webrtcvad
+pedalboard
