@@ -7,9 +7,9 @@ soundfile
 tensorflow==2.15.0
 tensorflow-probability==0.23.0
 tf-keras==2.15.0
-https://download.pytorch.org/whl/cu118/torch-2.3.1%2Bcu118-cp39-cp39-win_amd64.whl
-https://download.pytorch.org/whl/cu118/torchaudio-2.3.1%2Bcu118-cp39-cp39-win_amd64.whl
-https://download.pytorch.org/whl/cu118/torchvision-0.18.1%2Bcu118-cp39-cp39-win_amd64.whl
+torch
+torchvision
+torchaudio
 pydub
 gradio==4.29.0
 webrtcvad
