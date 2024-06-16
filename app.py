@@ -357,6 +357,7 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
           os.system(f"python inference.py --src_wav_path audio_src.wav --ref_wav_path voiced_audio.wav --key_shift {key_shift} --speech_enroll")
 
   if src_audio is None:
+      os.makedirs("./temp", exist_ok=True)
       audio_vocal = AudioSegment.from_file("output_svc/NeuCoSVCv2.wav", format="wav")
 
     # 进行动态范围的压缩
@@ -420,9 +421,9 @@ def convert(start_time, song_name_src, song_name_ref, src_audio, ref_audio, chec
       combined_audio = normalized_audio.overlay(audio_inst)
     
       # Export the concatenated audio to a new file
-      combined_audio.export(f"{song_name_src}-AI翻唱.mp3", format="MP3")
+      combined_audio.export(f"temp/{song_name_src}-AI翻唱.mp3", format="MP3")
     
-      return f"{song_name_src}-AI翻唱.mp3"
+      return f"temp/{song_name_src}-AI翻唱.mp3"
   else:
       return "output_svc/NeuCoSVCv2.wav"
 
