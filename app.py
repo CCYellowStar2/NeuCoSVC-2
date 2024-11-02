@@ -87,6 +87,7 @@ def search_bilibili(keyword):
     if keyword.startswith("BV"):
       req = requests.get("https://search.bilibili.com/all?keyword={}&duration=1".format(keyword), headers=headers).text
     else:
+      keyword=keyword.replace("(", "（").replace(")", "）")
       req = requests.get("https://search.bilibili.com/all?keyword={}&duration=1&tids=3&page=1".format(keyword), headers=headers).text
     print(keyword)
     video_link = "https:" + find_first_appearance_with_neighborhood(req, pattern)
